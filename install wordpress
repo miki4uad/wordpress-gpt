@@ -1,0 +1,121 @@
+1. הירשם לחשבון AWS: אם אין לך חשבון AWS, הירשם לחשבון ב-aws.amazon.com. ייתכן שתצטרך לספק את פרטי כרטיס האשראי שלך, אך AWS מציעה חשבון שכבה חינם למשך 12 חודשים הכולל מופע מיקרו EC2.
+
+2. הפעל מופע EC2: ברגע שיש לך חשבון AWS, היכנס למסוף הניהול של AWS ונווט לשירות EC2. הפעל מופע EC2 באמצעות Ubuntu Server AMI.
+
+3. התחבר למופע שלך: לאחר השקת המופע, התחבר אליו באמצעות SSH. אתה יכול להשתמש בכלי כמו PuTTY (עבור Windows) או Terminal (עבור Mac/Linux) כדי להתחבר למופע שלך.
+
+4. עדכן את רשימת החבילות: הפעל את הפקודה הבאה כדי לעדכן את רשימת החבילות:
+
+sudo apt-get update
+
+
+5. התקן את Apache: התקן את שרת האינטרנט Apache על ידי הפעלת הפקודה הבאה:
+
+sudo apt-get install apache2
+
+
+6. התקן את MySQL: התקן את שרת מסד הנתונים של MySQL על ידי הפעלת הפקודה הבאה:
+
+sudo apt-get install mysql-server
+
+
+במהלך ההתקנה, תתבקש להגדיר סיסמת שורש עבור MySQL.
+
+7. התקן PHP: התקן את PHP ואת מודולי ה-PHP הדרושים על ידי הפעלת הפקודה הבאה:
+
+sudo apt-get install php libapache2-mod-php php-mysql
+
+
+8. הפעל מחדש את Apache: הפעל מחדש את Apache כדי להחיל את השינויים על ידי הפעלת הפקודה הבאה:
+
+sudo systemctl restart apache2
+
+
+9. צור מסד נתונים MySQL: צור מסד נתונים MySQL עבור WordPress על ידי הפעלת הפקודות הבאות:
+
+sudo mysql -u root -p
+CREATE DATABASE wordpress;
+CREATE USER 'wordpressuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpressuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+
+החלף את wordpressuser ו-password בשם המשתמש והסיסמה הרצויים.
+
+10. הורד והתקן וורדפרס: הורד והתקן את וורדפרס על ידי הפעלת הפקודות הבאות:
+
+cd /tmp
+wget https://wordpress.org/latest.tar.gz
+tar xzvf latest.tar.gz
+sudo mv wordpress /var/www/html/
+
+
+11. הגדר את וורדפרס: הגדר את וורדפרס על ידי יצירת קובץ wp-config.php. אתה יכול לעשות זאת על ידי הפעלת הפקודה הבאה:
+
+cd /var/www/html/wordpress
+sudo cp wp-config-sample.php wp-config.php
+sudo nano wp-config.php
+
+
+החלף את השורות הבאות במידע על מסד הנתונים של MySQL:
+
+define('DB_NAME', 'wordpress');
+define('DB_USER', 'wordpressuser');
+define('DB_PASSWORD', 'password');
+define('DB_HOST', 'localhost');
+
+
+שמור וסגור את הקובץ.
+
+12. הגדר הרשאות: הגדר את ההרשאות הנכונות לוורדפרס על ידי הפעלת הפקודות הבאות:
+
+sudo chown -R www-data:www-data /var/www/html/
+sudo chmod -R 755 /var/www/html/
+
+
+13. הגדר את אפאצ'י: הגדר את אפאצ'י לשרת את וורדפרס על ידי יצירת קובץ מארח וירטואלי. אתה יכול לעשות זאת על ידי הפעלת הפקודה הבאה:
+
+sudo nano /etc/apache2/sites-available/wordpress.conf
+
+
+הוסף את השורות הבאות לקובץ:
+
+<VirtualHost *:80>
+    ServerAdmin admin@example.com
+    DocumentRoot /var/www/html/wordpress
+    ServerName example.com
+    ServerAlias www.example.com
+
+    <Directory /var/www/html/wordpress/>
+        Options FollowSymLinks
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/wordpress-error.log
+    CustomLog ${APACHE_LOG_DIR}/wordpress-access.log combined
+</VirtualHost>
+
+
+שמור וסגור את הקובץ.
+
+14. הפעל את המארח הוירטואלי: הפעל את המארח הווירטואלי על ידי הפעלת הפקודה הבאה:
+
+sudo a2ensite wordpress.conf
+
+
+15. השבת את ברירת המחדל של המארח הוירטואלי: השבת את המארח הוירטואלי המוגדר כברירת מחדל על ידי הפעלת הפקודה הבאה:
+
+sudo a2dissite 000-default.conf
+
+
+16. הפעל מחדש את Apache: הפעל מחדש את Apache כדי להחיל את השינויים על ידי הפעלת הפקודה הבאה:
+
+sudo systemctl restart apache2
+
+
+17. התקנת וורדפרס השלם: השלם את התקנת וורדפרס על ידי ניווט לכתובת ה-IP הציבורית של השרת שלך בדפדפן אינטרנט. פעל לפי ההוראות שעל המסך כדי להשלים את ההתקנה.
+
+זהו זה! כעת יש לך אתר וורדפרס הפועל על AWS EC2 בחינם באמצעות apt-get.
